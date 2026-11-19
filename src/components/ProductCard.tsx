@@ -55,10 +55,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       : 0;
 
   const perServingSgd = variant.priceSgd / Math.max(1, variant.servings);
-  const subDiscountPct = getSubscriptionDiscountPct(
-    product.autoShipDiscountPct,
-    subscriptionFrequency
-  );
   const subUnitPriceSgd = getSubscriptionPriceSgd(
     variant.priceSgd,
     product.autoShipDiscountPct,
@@ -66,6 +62,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   );
   const oneTimeTotalSgd = Number((variant.priceSgd * quantity).toFixed(2));
   const subTotalSgd = Number((subUnitPriceSgd * quantity).toFixed(2));
+  const unitSavingsSgd = Number((variant.priceSgd - subUnitPriceSgd).toFixed(2));
+  const subSavingsSgd = Number((oneTimeTotalSgd - subTotalSgd).toFixed(2));
 
   const kickerLabel =
     product.kicker || (discountPct >= 15 ? `Save ${discountPct}%` : undefined);
@@ -143,7 +141,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     }
 
     return (
-      <div className="space-y-2">
+      <div className="space-y-2.5">
         {variantCartQty > 0 && (
           <div className="flex items-center justify-between text-[11px] font-semibold text-[#2D5900] bg-[#F2F7EC] px-2 py-1 rounded">
             <span className="inline-flex items-center gap-1">
@@ -153,42 +151,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </div>
         )}
 
-        {/* Row 1: Quantity stepper + Add to Cart button (col-span-4 -> 4:8 ratio with Subscribe col-span-8) */}
-        <div className="grid grid-cols-12 gap-1.5 items-stretch">
-          <div className="col-span-8 flex items-center justify-between h-10 border border-[#D4D8DC] rounded-md bg-white overflow-hidden">
-            <button
-              type="button"
-              onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-              disabled={quantity <= 1}
-              aria-label="Reduce quantity"
-              className="w-7 h-full flex items-center justify-center text-[#1A1D1E] hover:bg-[#F5F6F7] disabled:opacity-35 disabled:cursor-not-allowed transition-colors cursor-pointer border-r border-[#ECEFF1]"
-            >
-              <Minus className="w-3.5 h-3.5" />
-            </button>
-            <div className="flex-1 flex items-center justify-center gap-1 px-1 text-xs tabular-nums">
-              <span className="text-[11px] font-medium text-[#5A6266]">Qty:</span>
-              <span className="font-bold text-[#1A1D1E]">{quantity}</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setQuantity((q) => Math.min(99, q + 1))}
-              aria-label="Increase quantity"
-              className="w-7 h-full flex items-center justify-center text-[#1A1D1E] hover:bg-[#F5F6F7] transition-colors cursor-pointer border-l border-[#ECEFF1]"
-            >
-              <Plus className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => onAddToCart(product.id, variant.id, 'one-time', quantity)}
-            className="col-span-4 h-10 px-1.5 border border-[#458500] bg-white hover:bg-[#F2F7EC] active:scale-[0.99] text-[#2D5900] text-[11px] font-bold leading-[1.15] rounded-md transition-all cursor-pointer flex items-center justify-center text-center"
-          >
-            Add to Cart
-          </button>
-        </div>
-
-        {/* Row 2 (below Add to Cart): Prominent animated Subscribe & Save card + Subscribe button (col-span-8) */}
+        {/* Block 1 (Top): Prominent animated Subscribe & Save card + Subscribe button (col-span-8) */}
         <div className="relative overflow-hidden rounded-lg border-2 border-[#458500] bg-gradient-to-br from-[#F2F9E8] via-[#F8FCF2] to-[#EAF5DC] p-2.5 space-y-2 shadow-sm shadow-[#458500]/15 animate-subscribe-ring">
           <div className="flex items-center justify-between gap-1">
             <span className="inline-flex items-center gap-1.5 text-xs font-extrabold text-[#1F4200] tracking-tight">
@@ -246,13 +209,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               initial={{ opacity: 0.6, y: -3, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.22 }}
-              className="col-span-4 leading-tight tabular-nums"
+              className="col-span-4 min-w-0 leading-tight tabular-nums space-y-0.5"
             >
-              <span className="block text-[13px] font-extrabold text-[#1F4200]">
-                SG${subTotalSgd.toFixed(2)}
+              <span className="inline-block max-w-full truncate px-1 py-0.5 rounded bg-[#2D5900] text-white text-[9.5px] font-extrabold">
+                Save SG${subSavingsSgd.toFixed(2)}
               </span>
-              <span className="block text-[10px] text-[#6B7276] line-through">
-                SG${oneTimeTotalSgd.toFixed(2)}
+              <span className="block text-[13px] font-extrabold text-[#1F4200] truncate">
+                SG${subTotalSgd.toFixed(2)}
               </span>
             </motion.div>
 
@@ -263,15 +226,69 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               onClick={() =>
                 onAddToCart(product.id, variant.id, 'autoship', quantity, subscriptionFrequency)
               }
-              className="col-span-8 relative overflow-hidden h-10 px-2 bg-gradient-to-r from-[#2D5900] via-[#458500] to-[#569B00] hover:brightness-105 text-white text-[11px] font-bold rounded-md shadow-sm shadow-[#458500]/30 transition-all cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap"
+              className="col-span-8 relative overflow-hidden h-10 px-2 bg-gradient-to-r from-[#2D5900] via-[#458500] to-[#569B00] hover:brightness-105 text-white text-xs font-bold rounded-md shadow-sm shadow-[#458500]/30 transition-all cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap"
             >
               <span
                 aria-hidden="true"
                 className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-white/25 to-transparent animate-subscribe-shimmer"
               />
-              <RefreshCw className="relative z-10 w-3 h-3 shrink-0" />
-              <span className="relative z-10">Subscribe (-{subDiscountPct}%)</span>
+              <RefreshCw className="relative z-10 w-3.5 h-3.5 shrink-0" />
+              <span className="relative z-10">Subscribe</span>
             </motion.button>
+          </div>
+        </div>
+
+        {/* Block 2 (Below Subscription): Per-item purchase price + Quantity stepper + Add to Cart button (col-span-4) */}
+        <div className="pt-1.5 border-t border-[#ECEFF1] space-y-1.5">
+          <div className="flex items-baseline justify-between gap-1 text-[11px] text-[#5A6266] tabular-nums">
+            <span>
+              Per item:{' '}
+              <span className="font-semibold text-[#2C3135]">
+                SG${variant.priceSgd.toFixed(2)}
+              </span>
+              {variant.listPriceSgd && (
+                <span className="ml-1 text-[10px] text-[#8A9296] line-through">
+                  SG${variant.listPriceSgd.toFixed(2)}
+                </span>
+              )}
+            </span>
+            <span className="text-[10px] text-[#6B7276] shrink-0">
+              SG${perServingSgd.toFixed(2)}/srv
+            </span>
+          </div>
+
+          <div className="grid grid-cols-12 gap-1.5 items-stretch">
+            <div className="col-span-8 flex items-center justify-between h-10 border border-[#D4D8DC] rounded-md bg-white overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                disabled={quantity <= 1}
+                aria-label="Reduce quantity"
+                className="w-7 h-full flex items-center justify-center text-[#1A1D1E] hover:bg-[#F5F6F7] disabled:opacity-35 disabled:cursor-not-allowed transition-colors cursor-pointer border-r border-[#ECEFF1]"
+              >
+                <Minus className="w-3.5 h-3.5" />
+              </button>
+              <div className="flex-1 flex items-center justify-center gap-1 px-1 text-xs tabular-nums">
+                <span className="text-[11px] font-medium text-[#5A6266]">Qty:</span>
+                <span className="font-bold text-[#1A1D1E]">{quantity}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setQuantity((q) => Math.min(99, q + 1))}
+                aria-label="Increase quantity"
+                className="w-7 h-full flex items-center justify-center text-[#1A1D1E] hover:bg-[#F5F6F7] transition-colors cursor-pointer border-l border-[#ECEFF1]"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => onAddToCart(product.id, variant.id, 'one-time', quantity)}
+              className="col-span-4 h-10 px-1.5 border border-[#458500] bg-white hover:bg-[#F2F7EC] active:scale-[0.99] text-[#2D5900] text-[11px] font-bold leading-[1.15] rounded-md transition-all cursor-pointer flex items-center justify-center text-center"
+            >
+              Add to Cart
+            </button>
           </div>
         </div>
       </div>
@@ -330,26 +347,21 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </div>
 
           <div className="sm:w-72 shrink-0 flex flex-col justify-between sm:border-l sm:border-[#ECEFF1] sm:pl-5 pt-2 sm:pt-0">
-            <div className="space-y-1">
-              <div className="flex items-baseline gap-2 flex-wrap">
-                <span className="text-lg font-bold text-[#1A1D1E] tabular-nums">
-                  SG${variant.priceSgd.toFixed(2)}
+            <div className="space-y-1 pb-2">
+              <div className="flex items-center gap-2 flex-wrap tabular-nums">
+                <span className="text-lg font-extrabold text-[#1F4200]">
+                  SG${subUnitPriceSgd.toFixed(2)}
                 </span>
-                {variant.listPriceSgd && (
-                  <span className="text-xs text-[#7B8287] line-through tabular-nums">
-                    SG${variant.listPriceSgd.toFixed(2)}
-                  </span>
-                )}
+                <span className="px-2 py-0.5 rounded bg-[#458500] text-white text-[11px] font-extrabold">
+                  Save SG${unitSavingsSgd.toFixed(2)}
+                </span>
               </div>
-              <p className="text-xs text-[#5A6266] tabular-nums">
-                SG${perServingSgd.toFixed(2)} / serving ({variant.servings} servings)
-              </p>
-              <p className="text-xs text-[#2D5900] font-medium tabular-nums">
-                Subscribe ({subscriptionFrequency}): SG${subUnitPriceSgd.toFixed(2)} (-{subDiscountPct}%)
+              <p className="text-[11px] font-medium text-[#2D5900] capitalize">
+                {subscriptionFrequency} subscription price
               </p>
             </div>
 
-            <div className="pt-3">{renderActionControl()}</div>
+            <div>{renderActionControl()}</div>
           </div>
         </div>
       </article>
@@ -407,34 +419,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           <p className="text-[11px] text-[#5A6266] mb-3">{variant.weightText}</p>
         )}
 
-        {/* Pricing Block anchored at bottom */}
-        <div className="mt-auto pt-2 border-t border-[#F1F3F5] space-y-2.5">
+        {/* Pricing Block anchored at bottom: Subscription price/savings directly above Subscribe */}
+        <div className="mt-auto pt-2 border-t border-[#F1F3F5] space-y-2">
           <div>
-            <div className="flex items-baseline gap-2">
-              <span
-                className={`text-[17px] font-extrabold tabular-nums ${
-                  discountPct > 0 ? 'text-[#C93B2B]' : 'text-[#1A1D1E]'
-                }`}
-              >
-                SG${variant.priceSgd.toFixed(2)}
+            <div className="flex items-center gap-2 flex-wrap tabular-nums">
+              <span className="text-[18px] font-extrabold text-[#1F4200]">
+                SG${subUnitPriceSgd.toFixed(2)}
               </span>
-              {variant.listPriceSgd && (
-                <span className="text-xs text-[#7B8287] line-through tabular-nums">
-                  SG${variant.listPriceSgd.toFixed(2)}
-                </span>
-              )}
-              {discountPct > 0 && (
-                <span className="text-[11px] font-bold text-[#C93B2B] tabular-nums">
-                  -{discountPct}%
-                </span>
-              )}
-            </div>
-            <div className="flex items-center justify-between gap-2 text-[11px] text-[#5A6266] mt-0.5 tabular-nums">
-              <span>SG${perServingSgd.toFixed(2)}/serving</span>
-              <span className="text-[#2D5900] font-medium capitalize">
-                {subscriptionFrequency}: SG${subUnitPriceSgd.toFixed(2)}
+              <span className="px-2 py-0.5 rounded bg-[#458500] text-white text-[11px] font-extrabold">
+                Save SG${unitSavingsSgd.toFixed(2)}
               </span>
             </div>
+            <p className="text-[11px] font-medium text-[#2D5900] capitalize mt-0.5">
+              {subscriptionFrequency} subscription price
+            </p>
           </div>
 
           {renderActionControl()}
