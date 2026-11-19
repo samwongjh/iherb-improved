@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { X, Check, Heart, ShieldCheck, Truck, Minus, Plus, Package, RefreshCw } from 'lucide-react';
 import {
   Product,
@@ -242,7 +243,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                         ? 'bg-[#E4E7E9] text-[#6B7276] cursor-not-allowed'
                         : addedFeedback === 'one-time'
                           ? 'bg-[#2D5900] text-white'
-                          : 'bg-[#458500] hover:bg-[#366a00] text-white'
+                          : 'border border-[#458500] bg-white hover:bg-[#F2F7EC] text-[#2D5900]'
                     }`}
                   >
                     {!variant.inStock ? (
@@ -258,22 +259,21 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   </button>
                 </div>
 
-                {/* Row 2 (below Add to Cart): Subscription Options (Monthly / Quarterly / Annually) + 8-col Subscribe Button */}
-                <div className="border border-[#DCE8CE] bg-[#F7FAF3] rounded-lg p-3.5 space-y-3">
+                {/* Row 2 (below Add to Cart): Prominent animated Subscription Options (Monthly / Quarterly / Annually) + 8-col Subscribe Button */}
+                <div className="relative overflow-hidden border-2 border-[#458500] bg-gradient-to-br from-[#F2F9E8] via-[#F8FCF2] to-[#EAF5DC] rounded-lg p-3.5 space-y-3 shadow-sm shadow-[#458500]/15 animate-subscribe-ring">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#2D5900]">
-                      <RefreshCw className="w-3.5 h-3.5 text-[#458500]" />
+                    <span className="inline-flex items-center gap-2 text-sm font-extrabold text-[#1F4200]">
+                      <span className="w-6 h-6 rounded-full bg-[#458500] text-white inline-flex items-center justify-center shrink-0 shadow-2xs">
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin [animation-duration:8s]" />
+                      </span>
                       Subscribe &amp; Save
-                    </span>
-                    <span className="text-xs font-bold text-[#458500] tabular-nums">
-                      Save {subDiscountPct}% on {subscriptionFrequency} delivery
                     </span>
                   </div>
 
                   <div
                     role="radiogroup"
                     aria-label="Subscription frequency"
-                    className="grid grid-cols-3 gap-2"
+                    className="grid grid-cols-3 gap-2 bg-white/80 p-1 rounded-md border border-[#DCE8CE]"
                   >
                     {SUBSCRIPTION_OPTIONS.map((opt) => {
                       const optPct = getSubscriptionDiscountPct(
@@ -293,71 +293,98 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                           role="radio"
                           aria-checked={active}
                           onClick={() => setSubscriptionFrequency(opt.id)}
-                          className={`p-2 rounded-md border text-left transition-colors cursor-pointer ${
-                            active
-                              ? 'border-[#458500] bg-white shadow-2xs'
-                              : 'border-[#DDE1E4] bg-white/70 hover:border-[#AEB4B9]'
+                          className={`relative p-2 rounded text-left transition-colors cursor-pointer ${
+                            active ? 'text-white' : 'text-[#1A1D1E] hover:bg-white'
                           }`}
                         >
-                          <div className="flex items-center justify-between gap-1">
+                          {active && (
+                            <motion.span
+                              layoutId={`modal-sub-pill-${product.id}`}
+                              transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+                              className="absolute inset-0 rounded bg-[#458500] shadow-xs"
+                            />
+                          )}
+                          <div className="relative z-10 flex items-center justify-between gap-1">
+                            <span className="text-xs font-bold">{opt.label}</span>
                             <span
-                              className={`text-xs ${
-                                active ? 'font-bold text-[#2D5900]' : 'font-semibold text-[#1A1D1E]'
+                              className={`text-[11px] font-bold tabular-nums ${
+                                active ? 'text-[#E3F6CC]' : 'text-[#458500]'
                               }`}
                             >
-                              {opt.label}
-                            </span>
-                            <span className="text-[11px] font-bold text-[#458500] tabular-nums">
                               -{optPct}%
                             </span>
                           </div>
-                          <p className="text-[11px] font-bold text-[#1A1D1E] tabular-nums mt-0.5">
+                          <p
+                            className={`relative z-10 text-[11px] font-bold tabular-nums mt-0.5 ${
+                              active ? 'text-white' : 'text-[#1A1D1E]'
+                            }`}
+                          >
                             SG${optPrice.toFixed(2)}/ea
                           </p>
-                          <p className="text-[10px] text-[#5A6266]">{opt.intervalText}</p>
+                          <p
+                            className={`relative z-10 text-[10px] ${
+                              active ? 'text-white/85' : 'text-[#5A6266]'
+                            }`}
+                          >
+                            {opt.intervalText}
+                          </p>
                         </button>
                       );
                     })}
                   </div>
 
                   <div className="grid grid-cols-12 gap-2.5 items-center">
-                    <div className="col-span-4 leading-tight tabular-nums">
-                      <span className="block text-sm font-extrabold text-[#2D5900]">
+                    <motion.div
+                      key={`${subscriptionFrequency}-${autoShipTotal}`}
+                      initial={{ opacity: 0.6, y: -3, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      transition={{ duration: 0.22 }}
+                      className="col-span-4 leading-tight tabular-nums"
+                    >
+                      <span className="block text-base font-extrabold text-[#1F4200]">
                         SG${autoShipTotal.toFixed(2)}
                       </span>
                       <span className="block text-[11px] text-[#6B7276] line-through">
                         SG${oneTimeTotal.toFixed(2)}
                       </span>
-                    </div>
+                    </motion.div>
 
-                    <button
+                    <motion.button
                       type="button"
                       disabled={!variant.inStock}
+                      whileHover={variant.inStock ? { scale: 1.015 } : undefined}
+                      whileTap={variant.inStock ? { scale: 0.985 } : undefined}
                       onClick={handleAddSubscription}
-                      className={`col-span-8 h-11 px-3 rounded-md text-xs sm:text-sm font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${
+                      className={`col-span-8 relative overflow-hidden h-11 px-3 rounded-md text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                         !variant.inStock
                           ? 'bg-[#E4E7E9] text-[#6B7276] cursor-not-allowed'
                           : addedFeedback === 'autoship'
                             ? 'bg-[#2D5900] text-white'
-                            : 'border border-[#458500] bg-white hover:bg-[#458500] text-[#2D5900] hover:text-white'
+                            : 'bg-gradient-to-r from-[#2D5900] via-[#458500] to-[#569B00] hover:brightness-105 text-white shadow-sm shadow-[#458500]/30'
                       }`}
                     >
+                      {variant.inStock && addedFeedback !== 'autoship' && (
+                        <span
+                          aria-hidden="true"
+                          className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-white/25 to-transparent animate-subscribe-shimmer"
+                        />
+                      )}
                       {!variant.inStock ? (
                         'Currently Out of Stock'
                       ) : addedFeedback === 'autoship' ? (
                         <>
-                          <Check className="w-4 h-4" />
-                          Subscription Added
+                          <Check className="relative z-10 w-4 h-4" />
+                          <span className="relative z-10">Subscription Added</span>
                         </>
                       ) : (
                         <>
-                          <RefreshCw className="w-4 h-4 shrink-0" />
-                          <span>
+                          <RefreshCw className="relative z-10 w-4 h-4 shrink-0" />
+                          <span className="relative z-10">
                             Subscribe ({subscriptionFrequency}) · SG${autoShipTotal.toFixed(2)}
                           </span>
                         </>
                       )}
-                    </button>
+                    </motion.button>
                   </div>
                 </div>
               </div>

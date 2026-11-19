@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { Heart, Minus, Plus, Package, Check, RefreshCw } from 'lucide-react';
 import {
   CartItem,
@@ -181,28 +182,27 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           <button
             type="button"
             onClick={() => onAddToCart(product.id, variant.id, 'one-time', quantity)}
-            className="col-span-4 h-10 px-1.5 bg-[#458500] hover:bg-[#366a00] active:scale-[0.99] text-white text-[11px] font-bold leading-[1.15] rounded-md transition-all cursor-pointer flex items-center justify-center text-center"
+            className="col-span-4 h-10 px-1.5 border border-[#458500] bg-white hover:bg-[#F2F7EC] active:scale-[0.99] text-[#2D5900] text-[11px] font-bold leading-[1.15] rounded-md transition-all cursor-pointer flex items-center justify-center text-center"
           >
             Add to Cart
           </button>
         </div>
 
-        {/* Row 2 (below Add to Cart): Subscription frequency selector & Subscribe button (col-span-8) */}
-        <div className="rounded-md border border-[#DCE8CE] bg-[#F7FAF3] p-2 space-y-1.5">
-          <div className="flex items-center justify-between gap-1 text-[11px]">
-            <span className="inline-flex items-center gap-1 font-semibold text-[#2D5900]">
-              <RefreshCw className="w-3 h-3 text-[#458500]" />
+        {/* Row 2 (below Add to Cart): Prominent animated Subscribe & Save card + Subscribe button (col-span-8) */}
+        <div className="relative overflow-hidden rounded-lg border-2 border-[#458500] bg-gradient-to-br from-[#F2F9E8] via-[#F8FCF2] to-[#EAF5DC] p-2.5 space-y-2 shadow-sm shadow-[#458500]/15 animate-subscribe-ring">
+          <div className="flex items-center justify-between gap-1">
+            <span className="inline-flex items-center gap-1.5 text-xs font-extrabold text-[#1F4200] tracking-tight">
+              <span className="w-5 h-5 rounded-full bg-[#458500] text-white inline-flex items-center justify-center shrink-0 shadow-2xs">
+                <RefreshCw className="w-3 h-3 animate-spin [animation-duration:8s]" />
+              </span>
               Subscribe &amp; Save
-            </span>
-            <span className="font-bold text-[#2D5900] tabular-nums">
-              Save {subDiscountPct}%
             </span>
           </div>
 
           <div
             role="radiogroup"
             aria-label="Subscription frequency"
-            className="grid grid-cols-3 gap-1"
+            className="grid grid-cols-3 gap-1 bg-white/80 p-1 rounded-md border border-[#DCE8CE]"
           >
             {SUBSCRIPTION_OPTIONS.map((opt) => {
               const optPct = getSubscriptionDiscountPct(product.autoShipDiscountPct, opt.id);
@@ -214,14 +214,25 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                   role="radio"
                   aria-checked={active}
                   onClick={() => setSubscriptionFrequency(opt.id)}
-                  className={`py-1 px-1 rounded border text-center transition-colors cursor-pointer ${
-                    active
-                      ? 'border-[#458500] bg-white text-[#2D5900] font-bold shadow-2xs'
-                      : 'border-[#DDE1E4] bg-white/60 text-[#5A6266] hover:border-[#AEB4B9]'
+                  className={`relative py-1 px-1 rounded text-center transition-colors cursor-pointer ${
+                    active ? 'text-white font-bold' : 'text-[#4B5358] hover:text-[#1A1D1E]'
                   }`}
                 >
-                  <span className="block text-[10px] leading-tight">{opt.label}</span>
-                  <span className="block text-[10px] leading-tight tabular-nums text-[#458500] font-semibold">
+                  {active && (
+                    <motion.span
+                      layoutId={`sub-pill-${product.id}-${viewMode}`}
+                      transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+                      className="absolute inset-0 rounded bg-[#458500] shadow-xs"
+                    />
+                  )}
+                  <span className="relative z-10 block text-[10px] leading-tight">
+                    {opt.label}
+                  </span>
+                  <span
+                    className={`relative z-10 block text-[10px] leading-tight tabular-nums font-semibold ${
+                      active ? 'text-[#E3F6CC]' : 'text-[#458500]'
+                    }`}
+                  >
                     -{optPct}%
                   </span>
                 </button>
@@ -230,27 +241,37 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </div>
 
           <div className="grid grid-cols-12 gap-1.5 items-center">
-            <div className="col-span-4 leading-tight tabular-nums">
-              <span className="block text-xs font-extrabold text-[#2D5900]">
+            <motion.div
+              key={`${subscriptionFrequency}-${subTotalSgd}`}
+              initial={{ opacity: 0.6, y: -3, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.22 }}
+              className="col-span-4 leading-tight tabular-nums"
+            >
+              <span className="block text-[13px] font-extrabold text-[#1F4200]">
                 SG${subTotalSgd.toFixed(2)}
               </span>
               <span className="block text-[10px] text-[#6B7276] line-through">
                 SG${oneTimeTotalSgd.toFixed(2)}
               </span>
-            </div>
+            </motion.div>
 
-            <button
+            <motion.button
               type="button"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() =>
                 onAddToCart(product.id, variant.id, 'autoship', quantity, subscriptionFrequency)
               }
-              className="col-span-8 h-10 px-2 border border-[#458500] bg-white hover:bg-[#458500] text-[#2D5900] hover:text-white active:scale-[0.99] text-[11px] font-bold rounded-md transition-all cursor-pointer flex items-center justify-center gap-1 whitespace-nowrap"
+              className="col-span-8 relative overflow-hidden h-10 px-2 bg-gradient-to-r from-[#2D5900] via-[#458500] to-[#569B00] hover:brightness-105 text-white text-[11px] font-bold rounded-md shadow-sm shadow-[#458500]/30 transition-all cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap"
             >
-              <RefreshCw className="w-3 h-3 shrink-0" />
-              <span>
-                Subscribe (-{subDiscountPct}%)
-              </span>
-            </button>
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-white/25 to-transparent animate-subscribe-shimmer"
+              />
+              <RefreshCw className="relative z-10 w-3 h-3 shrink-0" />
+              <span className="relative z-10">Subscribe (-{subDiscountPct}%)</span>
+            </motion.button>
           </div>
         </div>
       </div>
