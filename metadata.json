@@ -1,0 +1,6 @@
+{
+  "name": "iHerb Singapore — Collagen Search",
+  "description": "Shop collagen peptides, marine collagen, tablets, and beauty supplements on iHerb Singapore with live SGD pricing, faceted filters, and fast Singapore delivery.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
